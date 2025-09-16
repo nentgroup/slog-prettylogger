@@ -1,0 +1,10 @@
+{
+    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+    "extends": [
+        "config:base",
+        ":semanticCommitTypeAll(deps)",
+        "github>nentgroup/renovate-config:toce-bestpractices"
+    ],
+    "automerge": true,
+    "platformAutomerge": true
+}

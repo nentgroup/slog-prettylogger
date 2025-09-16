@@ -1,0 +1,50 @@
+---
+# For more configuration options, see https://taskfile.dev/docs/guide
+
+version: '3'
+
+tasks:
+  default:
+    desc: Run tests (default task)
+    cmds:
+      - task: test
+
+  test:
+    desc: Run tests with race detector and coverage
+    cmds:
+      - go test -v ./... -covermode=atomic -race -coverpkg=./...
+
+  lint:
+    desc: Run linters and auto-fix issues
+    cmds:
+      - golangci-lint run --allow-parallel-runners --fix
+      - actionlint
+
+  fmt:
+    desc: Format code with gofumpt + goimports
+    cmds:
+      - gofumpt -w .
+      - goimports -w .
+
+  setup:tools:
+    desc: Install and configure development tools (lefthook, commitlint, golangci-lint, Task)
+    cmds:
+      - chmod +x scripts/setup.sh
+      - ./scripts/setup.sh
+      - echo "✅ Tools installed"
+
+  setup:
+    desc: Setup everything needed for development
+    deps:
+      - setup:tools
+    cmds:
+      - echo "✅ Development environment ready"
+
+  ci:
+    desc: Run full local check (fmt, lint, test)
+    cmds:
+      - task: fmt
+      - task: lint
+      - task: test
+
+...

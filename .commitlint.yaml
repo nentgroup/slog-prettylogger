@@ -1,0 +1,39 @@
+---
+# For more rules, refer to: https://github.com/conventionalcommit/commitlint
+
+version: v0.10.1
+formatter: default
+rules:
+- header-min-length
+- header-max-length
+- body-max-line-length
+- footer-max-line-length
+severity:
+  default: error
+settings:
+  body-max-length:
+    argument: -1
+  body-max-line-length:
+    argument: 100
+  body-min-length:
+    argument: 0
+  description-max-length:
+    argument: -1
+  description-min-length:
+    argument: 0
+  footer-enum:
+    argument: []
+  footer-max-length:
+    argument: -1
+  footer-max-line-length:
+    argument: 100
+  footer-min-length:
+    argument: 0
+  footer-type-enum:
+    argument: []
+  header-max-length:
+    argument: 100
+  header-min-length:
+    argument: 10
+
+...

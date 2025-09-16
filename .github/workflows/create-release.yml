@@ -1,0 +1,36 @@
+---
+
+# https://github.com/wayofdev/gh-actions/blob/master/.github/workflows/create-release.yml
+# https://github.com/google-github-actions/release-please-action#release-types-supported
+# https://github.com/googleapis/release-please/blob/main/docs/customizing.md
+
+on:
+  push:
+    branches:
+      - main
+
+name: 📦 Create release
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
+
+jobs:
+  release-please:
+    name: Create or Publish Release
+    runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+    steps:
+      - name: Run release-please
+        id: release
+        uses: googleapis/release-please-action@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          config-file: .github/.release-please-config.json
+          manifest-file: .github/.release-please-manifest.json
+          target-branch: main
+
+...

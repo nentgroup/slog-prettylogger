@@ -1,0 +1,36 @@
+---
+# For more configuration options, see: https://lefthook.dev/configuration/
+
+pre-commit:
+  parallel: true
+  jobs:
+    - name: gofumpt
+      glob: "*.go"
+      run: gofumpt -l -w .
+    - name: golangci-lint
+      glob: "*.go"
+      run: golangci-lint run --new-from-rev=HEAD --fix
+    - name: github-actions-lint
+      glob: ".github/workflows/*.{yml,yaml}"
+      run: actionlint
+
+pre-push:
+  parallel: true
+  jobs:
+    - name: test
+      run: go test ./...
+
+commit-msg:
+  jobs:
+    - name: commitlint
+      run: commitlint lint {1}
+      fail_text: |
+        ❌ Invalid commit message format!
+        Please follow Conventional Commits:
+          feat(scope): add feature
+          fix(scope): fix bug
+        Example:
+          feat(auth): add JWT support
+        See https://www.conventionalcommits.org/en/v1.0.0/
+
+...

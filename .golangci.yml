@@ -1,0 +1,130 @@
+---
+# For a list of linters and their settings, see: https://golangci-lint.run/docs/linters/
+
+version: "2"
+run:
+  concurrency: 4
+  tests: true
+  build-tags:
+    - test
+linters:
+  enable:
+    - bodyclose
+    - cyclop
+    - dupl
+    - errorlint
+    - goconst
+    - goprintffuncname
+    - gosec
+    - misspell
+    - nestif
+    - noctx
+    - revive
+    - staticcheck
+    - whitespace
+    - ireturn
+    - errname
+  disable:
+    - depguard
+    - exhaustive
+    - nlreturn
+    - wrapcheck
+    - wsl
+  settings:
+    cyclop:
+      max-complexity: 15
+    dupl:
+      threshold: 250
+    errcheck:
+      check-type-assertions: true
+      check-blank: true
+      exclude-functions:
+        - io/ioutil.ReadFile
+        - io.Copy
+    funlen:
+      lines: 100
+      statements: 50
+    gocognit:
+      min-complexity: 15
+    goconst:
+      min-len: 3
+      min-occurrences: 3
+    gocritic:
+      enabled-tags:
+        - diagnostic
+        - experimental
+        - opinionated
+        - performance
+        - style
+    gocyclo:
+      min-complexity: 15
+    lll:
+      line-length: 120
+    misspell:
+      locale: US
+      mode: restricted
+    nolintlint:
+      require-explanation: true
+      require-specific: true
+      allow-unused: false
+  revive:
+    rules:
+      - name: exported
+        arguments:
+          - checkPrivateReceivers
+          - sayRepetitiveInsteadOfStutters
+        disabled: false
+      - name: var-naming
+      - name: error-naming
+      - name: error-strings
+      - name: unhandled-error
+      - name: unused-parameter
+      - name: unused-receiver
+      - name: redefines-builtin-id
+      - name: indent-error-flow
+      - name: import-shadowing
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - dupl
+          - errcheck
+          - funlen
+          - gocyclo
+          - gosec
+          - bodyclose
+          - ineffassign
+          - noctx
+          - staticcheck
+        path: _test\.go
+      - linters:
+          - lll
+        source: '^//go:generate '
+      - linters:
+          - godot
+        text: ^\s*// [A-Z].*[^.]$
+    paths:
+      - examples$
+issues:
+  max-issues-per-linter: 50
+  max-same-issues: 0
+formatters:
+  enable:
+    - gofumpt
+    - goimports
+  settings:
+    goimports:
+      local-prefixes:
+        - github.com/nentgroup/slog-prettylogger
+    gofumpt:
+      module-path: github.com/nentgroup/slog-prettylogger
+      extra-rules: true
+  exclusions:
+    generated: lax
+
+...
