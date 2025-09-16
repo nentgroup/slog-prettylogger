@@ -12,10 +12,13 @@ A colorful, readable logging handler for Go's standard `slog` package. Makes log
 
 ## Features
 
-- 🎨 **Color-coded log levels**: DEBUG, INFO, WARN, ERROR are visually distinguishable
-- 🔍 **Emphasized messages**: Important parts stand out with bold formatting
-- 🧩 **Smart field formatting**: Automatically formats fields based on type
-- 📊 **JSON object support**: Properly formats nested JSON objects
+- 🎨 **Color-coded levels**: DEBUG, INFO, WARN, ERROR
+- 🔍 **Bold messages**: Highlights log messages and errors
+- 🧩 **Field formatting**: Formats fields based on type
+- ⏱ **Custom time**: Override the default `time.Kitchen` format
+- 🚫 **No-color mode**: Disable ANSI colors
+- 🖌️ **Custom colors**: Set your own colors per log level
+
 
 ## Installation
 
@@ -50,16 +53,16 @@ func main() {
 	slog.SetDefault(logger)
 
 	// Basic logging
-	slog.Info("Application started", "version", "1.0.0")
-	slog.Debug("Debug information", "cache_hits", 42)
-	slog.Warn("Resource usage high", "cpu", 85.5, "memory", "3.2GB")
-	slog.Error("Failed to connect to database",
+	slog.Info("application started", "version", "1.0.0")
+	slog.Debug("debug information", "cache_hits", 42)
+	slog.Warn("resource usage high", "cpu", 85.5, "memory", "3.2GB")
+	slog.Error("failed to connect to database",
 		"error", "connection refused",
 		"retry_count", 3,
 		"db_host", "localhost:5432")
 
 	// With structured data
-	logger.Info("User logged in",
+	logger.Info("user logged in",
 		"user_id", 123,
 		"metadata", map[string]interface{}{
 			"browser":  "Chrome",
@@ -77,12 +80,28 @@ When using pretty logger, your console output will look similar to:
 
 ## Configuration Options
 
-The `HandlerOptions` struct allows customization of the logger behavior:
+Use the `HandlerOptions` struct to customize the logger:
 
 ```go
 type HandlerOptions struct {
-	SlogOpts slog.HandlerOptions // Standard slog handler options
+    SlogOpts    slog.HandlerOptions        // Standard slog handler options (level, AddSource, etc.)
+    TimeFormat  string                     // Optional: custom time format (default is time.Kitchen)
+    NoColor     bool                       // Optional: disable ANSI colors
+    LevelColors map[slog.Level]string      // Optional: override colors per log level (DEBUG, INFO, WARN, ERROR)
 }
+```
+
+### Example with custom colors
+
+```go
+logger := slog.New(prettylogger.NewHandler(os.Stdout, prettylogger.HandlerOptions{
+	SlogOpts: slog.HandlerOptions{
+		AddSource: true,
+		Level:     slog.LevelDebug,
+	},
+	TimeFormat:  time.RFC3339,
+	LevelColors: map[slog.Level]string{slog.LevelError: prettylogger.BoldRed}, // or use any ANSI color code
+}))
 ```
 
 ## Contributing
