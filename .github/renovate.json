@@ -3,7 +3,7 @@
     "extends": [
         "config:base",
         ":semanticCommitTypeAll(deps)",
-        "github>nentgroup/renovate-config:toce-bestpractices"
+        "github>nentgroup/renovate-config:toc-bestpractices"
     ],
     "automerge": true,
     "platformAutomerge": true
