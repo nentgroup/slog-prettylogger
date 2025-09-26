@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.4](https://github.com/nentgroup/slog-prettylogger/compare/v1.0.3...v1.0.4) (2025-09-26)
+
+
+### Dependencies
+
+* **deps:** update actions/checkout action to v5 ([#11](https://github.com/nentgroup/slog-prettylogger/issues/11)) ([0e0bea8](https://github.com/nentgroup/slog-prettylogger/commit/0e0bea8a0ac591b55d55ef4f73f1657286be272e))
+* **deps:** update actions/labeler action to v6 ([#12](https://github.com/nentgroup/slog-prettylogger/issues/12)) ([8faba96](https://github.com/nentgroup/slog-prettylogger/commit/8faba96e40a39cc37e67c8c2f0f8166c9f7634da))
+
 ## [1.0.3](https://github.com/nentgroup/slog-prettylogger/compare/v1.0.2...v1.0.3) (2025-09-26)
 
 
