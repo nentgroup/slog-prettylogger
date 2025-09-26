@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.2](https://github.com/nentgroup/slog-prettylogger/compare/v1.0.1...v1.0.2) (2025-09-26)
+
+
+### Bug Fixes
+
+* ignore source if PC is zero ([e44f0bb](https://github.com/nentgroup/slog-prettylogger/commit/e44f0bb8009a7983aceaa797596342b7283c271e))
+
 ## [1.0.1](https://github.com/nentgroup/slog-prettylogger/compare/v1.0.0...v1.0.1) (2025-09-16)
 
 
