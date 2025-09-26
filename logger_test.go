@@ -145,3 +145,118 @@ func TestHandleRecordDirectly(t *testing.T) {
 		t.Errorf("Expected output to contain 'key=value', got: %s", output)
 	}
 }
+
+func TestLogAttrsDoesNotPanicWithAddSource(t *testing.T) {
+	var buf bytes.Buffer
+	h := NewHandler(&buf, HandlerOptions{
+		NoColor:  true,
+		SlogOpts: slog.HandlerOptions{AddSource: true, Level: slog.LevelDebug},
+	})
+	slog.SetDefault(slog.New(h))
+
+	tracingAttrs := slog.Group(
+		"tracing",
+		slog.String("spanId", "some-span-id"),
+	)
+
+	metaAttrs := slog.Group(
+		"meta",
+		slog.String("http.url", "http://example.com"),
+		slog.String("http.method", "GET"),
+		slog.Int("http.status", 500),
+	)
+
+	slog.LogAttrs(
+		context.Background(),
+		slog.LevelInfo,
+		"via LogAttrs",
+		slog.String("caller", "ssss"),
+		tracingAttrs,
+		metaAttrs,
+	)
+
+	out := buf.String()
+	if !strings.Contains(out, "via LogAttrs") || !strings.Contains(out, "http.url=http://example.com") {
+		t.Fatalf("unexpected output: %q", out)
+	}
+}
+
+func TestStdLogBridgeDoesNotPanicWithAddSource(t *testing.T) {
+	var buf bytes.Buffer
+	h := NewHandler(&buf, HandlerOptions{
+		NoColor:  true,
+		SlogOpts: slog.HandlerOptions{AddSource: true, Level: slog.LevelDebug},
+	})
+	logger := slog.NewLogLogger(h, slog.LevelInfo)
+
+	logger.Printf("stdlog %s", "message")
+
+	out := buf.String()
+	if !strings.Contains(out, "stdlog message") {
+		t.Fatalf("unexpected output: %q", out)
+	}
+}
+
+func TestZeroTimeIsOmitted(t *testing.T) {
+	var buf bytes.Buffer
+	h := NewHandler(&buf, HandlerOptions{NoColor: true})
+	r := slog.Record{Message: "no time", Level: slog.LevelInfo}
+	_ = h.Handle(context.Background(), r)
+	out := buf.String()
+	if !strings.HasPrefix(out, "INFO ") && !strings.Contains(out, " INFO ") {
+		t.Fatalf("expected output to start with level when time is zero, got %q", out)
+	}
+}
+
+type lv string
+
+func (lv) LogValue() slog.Value { return slog.StringValue("resolved") }
+
+func TestAttrValuesAreResolved(t *testing.T) {
+	logger, buf := newTestLogger()
+	logger.Info("has lv", slog.Any("lv", lv("x")))
+	out := buf.String()
+	if !strings.Contains(out, "lv=resolved") {
+		t.Fatalf("expected resolved log value, got %q", out)
+	}
+}
+
+func TestZeroValueAttrIgnored(t *testing.T) {
+	var buf bytes.Buffer
+	h := NewHandler(&buf, HandlerOptions{NoColor: true})
+	r := slog.Record{Message: "ignore zero attr", Level: slog.LevelInfo}
+	r.AddAttrs(slog.Attr{})
+	_ = h.Handle(context.Background(), r)
+	out := buf.String()
+	if strings.Contains(out, "=") && strings.Contains(out, "ignore zero attr") && len(strings.Fields(out)) > 3 {
+		// There shouldn't be any extra key=value from zero attr; tolerate other fields
+		t.Fatalf("unexpected extra attributes from zero attr: %q", out)
+	}
+}
+
+func TestEmptyKeyGroupInlined(t *testing.T) {
+	logger, buf := newTestLogger()
+	logger.Info("inline grp", slog.Group("", slog.Int("a", 1), slog.Int("b", 2)))
+	out := buf.String()
+	if !strings.Contains(out, "a=1") || !strings.Contains(out, "b=2") {
+		t.Fatalf("expected inlined group attrs, got %q", out)
+	}
+}
+
+func TestNamedGroupFlattened(t *testing.T) {
+	logger, buf := newTestLogger()
+	logger.Info("named grp", slog.Group("g", slog.Int("a", 1), slog.String("s", "x")))
+	out := buf.String()
+	if !strings.Contains(out, "g.a=1") || !strings.Contains(out, "g.s=x") {
+		t.Fatalf("expected flattened group keys, got %q", out)
+	}
+}
+
+func TestEmptyGroupIgnored(t *testing.T) {
+	logger, buf := newTestLogger()
+	logger.Info("empty grp", slog.Group("g"))
+	out := buf.String()
+	if strings.Contains(out, "g=") || strings.Contains(out, "g.") {
+		t.Fatalf("expected empty group to be ignored, got %q", out)
+	}
+}

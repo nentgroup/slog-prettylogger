@@ -8,6 +8,7 @@ import (
 	"log"
 	"log/slog"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -45,8 +46,7 @@ type Handler struct {
 	attrs []slog.Attr
 }
 
-// NewHandler creates a new Handler that writes colorized, human-readable logs to out.
-// It accepts HandlerOptions for configuration.
+// NewHandler creates a new pretty logger Handler with the given output and options.
 func NewHandler(out io.Writer, opts HandlerOptions) *Handler {
 	if opts.TimeFormat == "" {
 		opts.TimeFormat = defaultTimeFormat
@@ -66,7 +66,7 @@ func NewHandler(out io.Writer, opts HandlerOptions) *Handler {
 	}
 }
 
-// WithAttrs returns a new Handler with merged attributes for pretty printing.
+// WithAttrs returns a new Handler with additional attributes.
 func (h *Handler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	newAttrs := make([]slog.Attr, 0, len(h.attrs)+len(attrs))
 	newAttrs = append(newAttrs, h.attrs...)
@@ -89,7 +89,7 @@ func (h *Handler) WithGroup(_ string) slog.Handler {
 	}
 }
 
-// Handle processes a log record, formatting it with colors and proper spacing.
+// Handle formats and writes a log record.
 func (h *Handler) Handle(_ context.Context, r slog.Record) error {
 	level := r.Level.String()
 	if !h.opts.NoColor {
@@ -98,22 +98,27 @@ func (h *Handler) Handle(_ context.Context, r slog.Record) error {
 		}
 	}
 
+	// Collect attributes with resolution, group inlining, and filtering.
 	fields := map[string]any{}
 	for _, a := range h.attrs {
-		fields[a.Key] = a.Value.Any()
+		h.collectAttr(fields, a, "")
 	}
 	r.Attrs(func(a slog.Attr) bool {
-		fields[a.Key] = a.Value.Any()
+		h.collectAttr(fields, a, "")
 		return true
 	})
 
-	timeStr := r.Time.Format(h.opts.TimeFormat)
 	var parts []string
-	parts = append(parts, timeStr, level)
+	// Respect zero time: only include if non-zero.
+	if !r.Time.IsZero() {
+		parts = append(parts, r.Time.Format(h.opts.TimeFormat))
+	}
+	parts = append(parts, level)
 
 	if h.opts.SlogOpts.AddSource {
-		src := fmt.Sprintf("%s:%d", r.Source().File, r.Source().Line)
-		parts = append(parts, colorize(BoldWhite, src))
+		if src := safeSourceString(r); src != "" {
+			parts = append(parts, colorize(BoldWhite, src))
+		}
 	}
 	parts = append(parts, ">", colorize(BoldWhite, r.Message))
 
@@ -133,6 +138,60 @@ func (h *Handler) Handle(_ context.Context, r slog.Record) error {
 	return nil
 }
 
+// collectAttr collects an attribute into the fields map, handling groups and prefixes.
+func (h *Handler) collectAttr(fields map[string]any, a slog.Attr, prefix string) {
+	// Resolve potential LogValuer values.
+	a.Value = a.Value.Resolve()
+	// Ignore zero-value attributes.
+	if a.Equal(slog.Attr{}) {
+		return
+	}
+
+	// Determine effective key with prefix.
+	key := a.Key
+	if prefix != "" {
+		if key != "" {
+			key = prefix + key
+		} else {
+			key = prefix // empty key under a prefix is unusual but supported
+		}
+	}
+
+	// Handle groups: Value.Any() for group is []slog.Attr.
+	if vv, ok := a.Value.Any().([]slog.Attr); ok {
+		// Filter/resolve children
+		resolved := make([]slog.Attr, 0, len(vv))
+		for _, child := range vv {
+			child.Value = child.Value.Resolve()
+			if child.Equal(slog.Attr{}) {
+				continue
+			}
+			resolved = append(resolved, child)
+		}
+		if len(resolved) == 0 {
+			// If a group has no Attrs (even with non-empty key), ignore it.
+			return
+		}
+		if a.Key == "" {
+			// Inline group's Attrs when the group's key is empty.
+			for _, child := range resolved {
+				h.collectAttr(fields, child, prefix)
+			}
+			return
+		}
+		// For non-empty group key, flatten using dotted keys.
+		childPrefix := key + "."
+		for _, child := range resolved {
+			h.collectAttr(fields, child, childPrefix)
+		}
+		return
+	}
+
+	// Non-group: store resolved value under computed key.
+	fields[key] = a.Value.Any()
+}
+
+// formatField formats a key-value pair for pretty printing.
 func (h *Handler) formatField(k string, v any) string {
 	// Format key
 	key := k + "="
@@ -153,7 +212,7 @@ func (h *Handler) formatField(k string, v any) string {
 	return key + val
 }
 
-// formatValue formats a value for pretty printing.
+// formatValue formats a value based on its type for pretty printing.
 func formatValue(v interface{}) string {
 	switch vv := v.(type) {
 	case string:
@@ -192,6 +251,19 @@ func formatValue(v interface{}) string {
 	}
 }
 
+// safeSourceString safely retrieves the source file and line from a slog.Record.
+func safeSourceString(r slog.Record) string {
+	if r.PC == 0 {
+		return ""
+	}
+	s := r.Source()
+	if s == nil || s.File == "" || s.Line == 0 {
+		return ""
+	}
+	return s.File + ":" + strconv.Itoa(s.Line)
+}
+
+// colorize wraps a string with the given ANSI color code.
 func colorize(color, s string) string {
 	return color + s + Reset
 }
