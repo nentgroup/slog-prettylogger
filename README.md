@@ -8,16 +8,16 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/nentgroup/slog-prettylogger)](https://goreportcard.com/report/github.com/nentgroup/slog-prettylogger)
 [![license](http://img.shields.io/badge/license-MIT-red.svg?style=flat)](https://raw.githubusercontent.com/rs/zerolog/master/LICENSE)
 
-A colorful, readable logging handler for Go's standard `slog` package. Makes logs easier to read during development with color-coded levels and clean formatting. Inspired by zerolog's console output.
+A colourful, readable logging handler for Go's standard `slog` package. Makes logs easier to read during development with colour-coded levels and clean formatting. Inspired by zerolog's console output.
 
 ## Features
 
-- 🎨 **Color-coded levels**: DEBUG, INFO, WARN, ERROR
-- 🔍 **Bold messages**: Highlights log messages and errors
-- 🧩 **Field formatting**: Formats fields based on type
-- ⏱ **Custom time**: Override the default `time.Kitchen` format
-- 🚫 **No-color mode**: Disable ANSI colors
-- 🖌️ **Custom colors**: Set your own colors per log level
+- <picture><source media="(prefers-color-scheme: dark)" srcset="./.github/assets/icons/chart-dark.svg" width="16" height="16"><img src="./.github/assets/icons/chart-light.svg" width="16" height="16"></picture> **Color-coded levels**: DEBUG, INFO, WARN, ERROR
+- <picture><source media="(prefers-color-scheme: dark)" srcset="./.github/assets/icons/highlight-dark.svg" width="16" height="16"><img src="./.github/assets/icons/highlight-light.svg" width="16" height="16"></picture> **Bold messages**: Highlights log messages and errors
+- <picture><source media="(prefers-color-scheme: dark)" srcset="./.github/assets/icons/document-dark.svg" width="16" height="16"><img src="./.github/assets/icons/document-light.svg" width="16" height="16"></picture> **Field formatting**: Formats fields based on type
+- <picture><source media="(prefers-color-scheme: dark)" srcset="./.github/assets/icons/clock-dark.svg" width="16" height="16"><img src="./.github/assets/icons/clock-light.svg" width="16" height="16"></picture> **Custom time**: Override the default `time.Kitchen` format
+- <picture><source media="(prefers-color-scheme: dark)" srcset="./.github/assets/icons/ban-dark.svg" width="16" height="16"><img src="./.github/assets/icons/ban-light.svg" width="16" height="16"></picture> **No-color mode**: Disable ANSI colors
+- <picture><source media="(prefers-color-scheme: dark)" srcset="./.github/assets/icons/palette-dark.svg" width="16" height="16"><img src="./.github/assets/icons/palette-light.svg" width="16" height="16"></picture> **Custom colors**: Set your own colors per log level
 
 
 ## Installation
@@ -46,7 +46,7 @@ func main() {
 			AddSource: true, // Include caller information
 			Level:     slog.LevelDebug,
 		},
-		TimeFormat: time.TimeOnly, // Customize time format, default is time.Kitchen
+		TimeFormat: time.TimeOnly, // Customise time format, default is time.Kitchen
 	}))
 
 	// Set as default logger
@@ -80,7 +80,7 @@ When using pretty logger, your console output will look similar to:
 
 ## Configuration Options
 
-Use the `HandlerOptions` struct to customize the logger:
+Use the `HandlerOptions` struct to customise the logger:
 
 ```go
 type HandlerOptions struct {
@@ -100,7 +100,7 @@ logger := slog.New(prettylogger.NewHandler(os.Stdout, prettylogger.HandlerOption
 		Level:     slog.LevelDebug,
 	},
 	TimeFormat:  time.RFC3339,
-	LevelColors: map[slog.Level]string{slog.LevelError: prettylogger.BoldRed}, // or use any ANSI color code
+	LevelColors: map[slog.Level]string{slog.LevelError: prettylogger.BoldRed}, // or use any ANSI colour code
 }))
 ```
 

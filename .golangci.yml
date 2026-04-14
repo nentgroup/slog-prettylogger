@@ -67,22 +67,22 @@ linters:
       require-explanation: true
       require-specific: true
       allow-unused: false
-  revive:
-    rules:
-      - name: exported
-        arguments:
-          - checkPrivateReceivers
-          - sayRepetitiveInsteadOfStutters
-        disabled: false
-      - name: var-naming
-      - name: error-naming
-      - name: error-strings
-      - name: unhandled-error
-      - name: unused-parameter
-      - name: unused-receiver
-      - name: redefines-builtin-id
-      - name: indent-error-flow
-      - name: import-shadowing
+    revive:
+      rules:
+        - name: exported
+          arguments:
+            - checkPrivateReceivers
+            - sayRepetitiveInsteadOfStutters
+          disabled: false
+        - name: var-naming
+        - name: error-naming
+        - name: error-strings
+        - name: unhandled-error
+        - name: unused-parameter
+        - name: unused-receiver
+        - name: redefines-builtin-id
+        - name: indent-error-flow
+        - name: import-shadowing
   exclusions:
     generated: lax
     presets:
