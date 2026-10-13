@@ -1,9 +1,4 @@
 {
-    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-    "extends": [
-        "config:base",
-        ":semanticCommitTypeAll(deps)"
-    ],
-    "automerge": true,
-    "platformAutomerge": true
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "enabled": false
 }
